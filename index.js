@@ -1,5 +1,5 @@
 const express = require("express");
-const app = express();
+const app  express();
 
 app.use(express.json());
 
@@ -56,12 +56,3 @@ document.getElementById("output").innerHTML="Translated: "+text;
 }
 </script>
 
-</body>
-</html>
-`);
-});
-
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-console.log("Server started");
