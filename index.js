@@ -34,3 +34,34 @@ background:#00ff88;
 }
 #output{
 margin-top:20px;
+font-size:22px;
+color:#00ff88;
+}
+</style>
+</head>
+<body>
+
+<h1>Translation AI 🌐</h1>
+
+<textarea id="text" placeholder="Type here"></textarea><br>
+
+<button onclick="run()">Translate</button>
+
+<div id="output"></div>
+
+<script>
+function run(){
+let text=document.getElementById("text").value;
+document.getElementById("output").innerHTML="Translated: "+text;
+}
+</script>
+
+</body>
+</html>
+`);
+});
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+console.log("Server started");
