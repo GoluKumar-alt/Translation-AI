@@ -2,129 +2,76 @@ const express = require("express");
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
 res.send(`
 <!DOCTYPE html>
 <html>
 <head>
-<title>Real Translation AI</title>
+<title>Translation AI</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{
-margin:0;
-padding:0;
-font-family:Arial,sans-serif;
-background:linear-gradient(135deg,#141e30,#243b55);
+font-family:Arial;
+background:#111;
 color:white;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
+text-align:center;
+padding:30px;
 }
-.container{
+textarea,select,button{
 width:90%;
 max-width:500px;
-background:rgba(255,255,255,0.08);
-padding:25px;
-border-radius:18px;
-text-align:center;
-box-shadow:0 0 20px rgba(0,0,0,0.4);
-}
-h1{
-margin-bottom:20px;
-}
-textarea{
-width:100%;
-height:120px;
 padding:12px;
+margin:10px;
 font-size:18px;
-border:none;
 border-radius:10px;
-resize:none;
-margin-bottom:15px;
-}
-select{
-width:100%;
-padding:12px;
-font-size:17px;
 border:none;
-border-radius:10px;
-margin-bottom:15px;
 }
 button{
-width:100%;
-padding:14px;
-font-size:18px;
+background:#00ff88;
 font-weight:bold;
-border:none;
-border-radius:10px;
-background:#00ff99;
 cursor:pointer;
 }
 #output{
 margin-top:20px;
-padding:15px;
-background:rgba(255,255,255,0.08);
-border-radius:10px;
-min-height:60px;
-font-size:20px;
+font-size:22px;
+color:#00ff88;
 }
 </style>
 </head>
 <body>
 
-<div class="container">
-<h1>🌐 Real Translation AI</h1>
+<h1>🌐 Translation AI</h1>
 
-<textarea id="text" placeholder="Enter text..."></textarea>
+<textarea id="text" placeholder="Type text here"></textarea><br>
 
 <select id="lang">
 <option value="hi">Hindi</option>
 <option value="en">English</option>
 <option value="fr">French</option>
 <option value="es">Spanish</option>
-<option value="ur">Urdu</option>
-</select>
+</select><br>
 
-<button onclick="translateNow()">Translate</button>
+<button onclick="go()">Translate</button>
 
-<div id="output">Translation appears here...</div>
-</div>
+<div id="output"></div>
 
 <script>
-async function translateNow(){
+async function go(){
 let text=document.getElementById("text").value;
 let lang=document.getElementById("lang").value;
 
-if(text.trim()==""){
-document.getElementById("output").innerHTML="Please enter text";
-return;
-}
-
 document.getElementById("output").innerHTML="Translating...";
 
-try{
-let res = await fetch("https://libretranslate.de/translate",{
+let res = await fetch("/translate",{
 method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-q:text,
-source:"auto",
-target:lang,
-format:"text"
-})
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({text:text,lang:lang})
 });
 
 let data = await res.json();
-
-document.getElementById("output").innerHTML=data.translatedText;
-
-}catch(err){
-document.getElementById("output").innerHTML="Translation failed";
-}
+document.getElementById("output").innerHTML=data.result;
 }
 </script>
 
@@ -133,6 +80,28 @@ document.getElementById("output").innerHTML="Translation failed";
 `);
 });
 
-app.listen(process.env.PORT || 3000, () => {
-console.log("Server Started");
+app.post("/translate", async (req,res)=>{
+try{
+const { text, lang } = req.body;
+
+const response = await fetch("https://translate.argosopentech.com/translate",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+q:text,
+source:"auto",
+target:lang,
+format:"text"
+})
 });
+
+const data = await response.json();
+
+res.json({ result: data.translatedText || "Failed" });
+
+}catch(err){
+res.json({ result:"Translation failed" });
+}
+});
+
+app.listen(process.env.PORT || 3000, ()=>console.log("Server Started"));
