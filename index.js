@@ -1,115 +1,99 @@
 const express = require("express");
 const app = express();
 
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
 app.get("/", (req, res) => {
 res.send(`
 <!DOCTYPE html>
 <html>
 <head>
 <title>Translation AI</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body{
-margin:0;
-padding:0;
-font-family:Arial,sans-serif;
-background:linear-gradient(135deg,#141e30,#243b55);
-color:white;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-}
-
-.container{
-width:90%;
-max-width:500px;
-background:rgba(255,255,255,0.08);
-padding:25px;
-border-radius:18px;
+background:#0f172a;
+font-family:Arial;
 text-align:center;
-box-shadow:0 0 20px rgba(0,0,0,0.4);
+padding:30px;
+color:white;
 }
-
-h1{
-margin-bottom:20px;
+.box{
+max-width:500px;
+margin:auto;
+background:#1e293b;
+padding:25px;
+border-radius:20px;
 }
-
 textarea{
-width:100%;
-height:130px;
-padding:12px;
-font-size:18px;
+width:90%;
+height:140px;
+font-size:20px;
+padding:15px;
+border-radius:12px;
 border:none;
-border-radius:10px;
-resize:none;
-margin-bottom:15px;
+outline:none;
 }
-
-button{
-width:100%;
+select,button{
+margin-top:15px;
 padding:12px;
 font-size:18px;
 border:none;
 border-radius:10px;
+width:90%;
+}
+button{
 background:#00ff99;
 font-weight:bold;
 cursor:pointer;
-margin-bottom:15px;
 }
-
-#result{
+#output{
 margin-top:20px;
-padding:15px;
-background:rgba(255,255,255,0.08);
-border-radius:10px;
-font-size:20px;
-min-height:60px;
-}
-
-#google_translate_element{
-margin-top:15px;
+background:#334155;
+padding:20px;
+border-radius:12px;
+font-size:24px;
+min-height:80px;
 }
 </style>
 </head>
-
 <body>
 
-<div class="container">
+<div class="box">
 <h1>🌐 Translation AI</h1>
 
-<textarea id="text" placeholder="Type your text here..."></textarea>
+<textarea id="text" placeholder="Type text here..."></textarea>
 
-<button onclick="showText()">Show Text</button>
+<select id="lang">
+<option value="hi">Hindi</option>
+<option value="fr">French</option>
+<option value="es">Spanish</option>
+<option value="de">German</option>
+<option value="ar">Arabic</option>
+</select>
 
-<div id="result">Your text will appear here...</div>
+<button onclick="translateText()">Translate</button>
 
-<div id="google_translate_element"></div>
-
+<div id="output">Result will appear here</div>
 </div>
 
 <script>
-function showText(){
+async function translateText(){
 let text=document.getElementById("text").value;
-document.getElementById("result").innerHTML=text;
-}
+let lang=document.getElementById("lang").value;
 
-function googleTranslateElementInit() {
-new google.translate.TranslateElement(
-{pageLanguage: 'en'},
-'google_translate_element'
-);
+let url="https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl="+lang+"&dt=t&q="+encodeURIComponent(text);
+
+let res=await fetch(url);
+let data=await res.json();
+
+document.getElementById("output").innerHTML=data[0][0][0];
 }
 </script>
-
-<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 </body>
 </html>
 `);
 });
 
-app.listen(process.env.PORT || 3000, () => {
-console.log("Server Started");
-});
+app.listen(process.env.PORT || 3000);
