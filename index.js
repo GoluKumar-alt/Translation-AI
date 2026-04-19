@@ -47,7 +47,7 @@ document.getElementById("result").innerText=data;
 });
 
 function getId(url){
-let m = url.match(/(?:v=|youtu\\.be\\/)([a-zA-Z0-9_-]{11})/);
+let m = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
 return m ? m[1] : url;
 }
 
