@@ -6,15 +6,24 @@ app.use(express.json());
 
 function getVideoId(url) {
   try {
-    const u = new URL(url);
+    if (!url) return null;
 
-    if (u.hostname.includes("youtu.be")) {
-      return u.pathname.replace("/", "");
-    }
+    url = url.trim();
 
-    if (u.searchParams.get("v")) {
-      return u.searchParams.get("v");
-    }
+    // direct 11-char id
+    if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url;
+
+    // youtu.be short link
+    let shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    if (shortMatch) return shortMatch[1];
+
+    // youtube watch link
+    let watchMatch = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+    if (watchMatch) return watchMatch[1];
+
+    // embed link
+    let embedMatch = url.match(/embed\/([a-zA-Z0-9_-]{11})/);
+    if (embedMatch) return embedMatch[1];
 
     return null;
   } catch {
@@ -23,7 +32,7 @@ function getVideoId(url) {
 }
 
 app.get("/", (req, res) => {
-  res.send(`
+res.send(`
 <!DOCTYPE html>
 <html>
 <head>
@@ -95,48 +104,42 @@ document.getElementById("result").innerHTML=data;
 });
 
 app.post("/subtitles", async (req, res) => {
-  try {
-    const url = req.body.url;
-    const id = getVideoId(url);
+try{
+const id = getVideoId(req.body.url);
 
-    if (!id) {
-      return res.send("❌ Invalid YouTube URL");
-    }
+if(!id){
+return res.send("❌ Invalid YouTube URL");
+}
 
-    const captionUrl =
-      "https://www.youtube.com/api/timedtext?lang=en&v=" + id;
+const captionUrl = "https://www.youtube.com/api/timedtext?lang=en&v=" + id;
 
-    const response = await fetch(captionUrl);
-    const xml = await response.text();
+const response = await fetch(captionUrl);
+const xml = await response.text();
 
-    if (!xml || xml.trim() === "") {
-      return res.send("❌ Subtitles not found");
-    }
+if(!xml || xml.trim()==""){
+return res.send("❌ Subtitles not found");
+}
 
-    const matches = [...xml.matchAll(/<text.+?>(.*?)<\/text>/g)];
+const matches = [...xml.matchAll(/<text.+?>(.*?)<\\/text>/g)];
 
-    if (matches.length === 0) {
-      return res.send("❌ No subtitle lines found");
-    }
+if(matches.length===0){
+return res.send("❌ No subtitle lines found");
+}
 
-    let text = matches
-      .slice(0, 50)
-      .map(x =>
-        x[1]
-          .replace(/&#39;/g, "'")
-          .replace(/&amp;/g, "&")
-          .replace(/&quot;/g, '"')
-          .replace(/&lt;/g, "<")
-          .replace(/&gt;/g, ">")
-      )
-      .join(" ");
+let text = matches.slice(0,50).map(x =>
+x[1]
+.replace(/&#39;/g,"'")
+.replace(/&amp;/g,"&")
+.replace(/&quot;/g,'"')
+.replace(/&lt;/g,"<")
+.replace(/&gt;/g,">")
+).join(" ");
 
-    res.send(text);
+res.send(text);
 
-  } catch (err) {
-    res.send("❌ Error getting subtitles");
-  }
+}catch(err){
+res.send("❌ Error getting subtitles");
+}
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Server started"));
+app.listen(process.env.PORT || 3000);
