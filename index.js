@@ -1,8 +1,5 @@
 const express = require("express");
-const translate = require("@vitalets/google-translate-api");
 const app = express();
-
-app.use(express.json());
 
 app.get("/", (req, res) => {
 res.send(`
@@ -12,51 +9,91 @@ res.send(`
 <title>Translation AI</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{font-family:Arial;background:#111;color:#fff;text-align:center;padding:30px}
-textarea,select,button{width:90%;max-width:500px;padding:12px;margin:10px;font-size:18px;border:none;border-radius:10px}
-button{background:#00ff88;font-weight:bold}
-#output{margin-top:20px;font-size:22px;color:#00ff88}
+body{
+margin:0;
+padding:0;
+font-family:Arial,sans-serif;
+background:linear-gradient(135deg,#141e30,#243b55);
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+.container{
+width:90%;
+max-width:500px;
+background:rgba(255,255,255,0.08);
+padding:25px;
+border-radius:18px;
+text-align:center;
+box-shadow:0 0 20px rgba(0,0,0,0.4);
+}
+h1{margin-bottom:20px;}
+textarea{
+width:100%;
+height:130px;
+padding:12px;
+font-size:18px;
+border:none;
+border-radius:10px;
+resize:none;
+margin-bottom:15px;
+}
+select,button{
+width:100%;
+padding:12px;
+font-size:18px;
+border:none;
+border-radius:10px;
+margin-bottom:15px;
+}
+button{
+background:#00ff99;
+font-weight:bold;
+cursor:pointer;
+}
 </style>
 </head>
 <body>
+
+<div class="container">
 <h1>🌐 Translation AI</h1>
-<textarea id="text" placeholder="Type text here"></textarea><br>
+
+<textarea id="text" placeholder="Type text here..."></textarea>
+
 <select id="lang">
 <option value="hi">Hindi</option>
 <option value="en">English</option>
 <option value="fr">French</option>
 <option value="es">Spanish</option>
-</select><br>
-<button onclick="go()">Translate</button>
-<div id="output"></div>
+<option value="ur">Urdu</option>
+</select>
+
+<button onclick="goTranslate()">Translate</button>
+</div>
 
 <script>
-async function go(){
-const text=document.getElementById("text").value;
-const lang=document.getElementById("lang").value;
-document.getElementById("output").innerHTML="Translating...";
-const res=await fetch("/translate",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({text,lang})
-});
-const data=await res.json();
-document.getElementById("output").innerHTML=data.result;
+function goTranslate(){
+let text=document.getElementById("text").value.trim();
+let lang=document.getElementById("lang").value;
+
+if(text==""){
+alert("Please enter text");
+return;
+}
+
+let url="https://translate.google.com/?sl=auto&tl="+lang+"&text="+encodeURIComponent(text)+"&op=translate";
+
+window.open(url,"_blank");
 }
 </script>
+
 </body>
 </html>
 `);
 });
 
-app.post("/translate", async (req,res)=>{
-try{
-const {text, lang} = req.body;
-const result = await translate(text,{to:lang});
-res.json({result: result.text});
-}catch(e){
-res.json({result:"Translation failed"});
-}
+app.listen(process.env.PORT || 3000, () => {
+console.log("Server Started");
 });
-
-app.listen(process.env.PORT || 3000);
