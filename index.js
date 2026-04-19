@@ -8,6 +8,7 @@ res.send(`
 <head>
 <title>Translation AI</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body{
 margin:0;
@@ -20,6 +21,7 @@ justify-content:center;
 align-items:center;
 height:100vh;
 }
+
 .container{
 width:90%;
 max-width:500px;
@@ -29,7 +31,11 @@ border-radius:18px;
 text-align:center;
 box-shadow:0 0 20px rgba(0,0,0,0.4);
 }
-h1{margin-bottom:20px;}
+
+h1{
+margin-bottom:20px;
+}
+
 textarea{
 width:100%;
 height:130px;
@@ -40,54 +46,64 @@ border-radius:10px;
 resize:none;
 margin-bottom:15px;
 }
-select,button{
+
+button{
 width:100%;
 padding:12px;
 font-size:18px;
 border:none;
 border-radius:10px;
-margin-bottom:15px;
-}
-button{
 background:#00ff99;
 font-weight:bold;
 cursor:pointer;
+margin-bottom:15px;
+}
+
+#result{
+margin-top:20px;
+padding:15px;
+background:rgba(255,255,255,0.08);
+border-radius:10px;
+font-size:20px;
+min-height:60px;
+}
+
+#google_translate_element{
+margin-top:15px;
 }
 </style>
 </head>
+
 <body>
 
 <div class="container">
 <h1>🌐 Translation AI</h1>
 
-<textarea id="text" placeholder="Type text here..."></textarea>
+<textarea id="text" placeholder="Type your text here..."></textarea>
 
-<select id="lang">
-<option value="hi">Hindi</option>
-<option value="en">English</option>
-<option value="fr">French</option>
-<option value="es">Spanish</option>
-<option value="ur">Urdu</option>
-</select>
+<button onclick="showText()">Show Text</button>
 
-<button onclick="goTranslate()">Translate</button>
+<div id="result">Your text will appear here...</div>
+
+<div id="google_translate_element"></div>
+
 </div>
 
 <script>
-function goTranslate(){
-let text=document.getElementById("text").value.trim();
-let lang=document.getElementById("lang").value;
-
-if(text==""){
-alert("Please enter text");
-return;
+function showText(){
+let text=document.getElementById("text").value;
+document.getElementById("result").innerHTML=text;
 }
 
-let url="https://translate.google.com/?sl=auto&tl="+lang+"&text="+encodeURIComponent(text)+"&op=translate";
-
-window.open(url,"_blank");
+function googleTranslateElementInit() {
+new google.translate.TranslateElement(
+{pageLanguage: 'en'},
+'google_translate_element'
+);
 }
 </script>
+
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 </body>
 </html>
